@@ -7,8 +7,8 @@
 BOOL RPM(
 	LPCVOID lpBaseAddress,
 	LPVOID lpBuffer,
-	SIZE_T nSize,
-	SIZE_T* lpNumberOfBytesRead
+	size_t nSize,
+	size_t* lpNumberOfBytesRead
 );
 
 template<typename T>
@@ -50,7 +50,7 @@ public:
 };
 
 template<typename T>
-class RemoteType{
+class RemoteType {
 	size_t addr;
 public:
 	size_t address()
@@ -62,6 +62,9 @@ public:
 		static_assert(sizeof(T) <= sizeof(size_t), "RemoteType size must be le than an registers.");
 	};
 
+	RemoteType(T _addr) :addr((size_t)_addr) {
+	};
+
 	template<typename U = std::remove_pointer<T>::type>
 	typename std::enable_if<std::is_pointer<U>::value, RemoteType<U>>::type operator[] (const int index)
 	{
@@ -71,7 +74,7 @@ public:
 		RemoteType<U> a((size_t)result);
 		return a;
 	};
-	
+
 	template<typename U = std::remove_pointer<T>::type>
 	typename std::enable_if<
 		!std::is_pointer<U>::value && (sizeof(U) <= sizeof(size_t)), U>::type
@@ -96,23 +99,22 @@ public:
 	template<typename U = std::remove_pointer<T>::type>
 	typename std::enable_if<!std::is_pointer<U>::value, U>::type operator*() const
 	{
-		T result;
+		U result;
 		size_t rb;
-		RPM((void*)(addr), &result, sizeof(T), &rb);
-		U a((size_t)result);
-		return a;
+		RPM((void*)(addr), &result, sizeof(U), &rb);
+		return result;
 	}
 
 	template<typename U = std::remove_pointer<T>::type>
-	ReflectPointer<T> refl(int index=0) const
+	ReflectPointer<T> refl(int index = 0) const
 	{
 		return ReflectPointer<T>((T)((size_t)addr + sizeof(U)*index));
 	}
 
 	template<typename U = std::remove_pointer<T>::type>
-	typename std::enable_if<std::is_pointer<U>::value, 
+	typename std::enable_if<std::is_pointer<U>::value,
 		std::shared_ptr<ReflectPointer<U>[]> >::type
-	reflArray(int size) const
+		reflArray(int size) const
 	{
 		ReflectPointer<U>* result = (ReflectPointer<U>*)malloc(sizeof(U)*size);
 		size_t rb;
