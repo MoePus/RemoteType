@@ -29,7 +29,7 @@ A C++ Header only lib to help to write simple code to get remote class.
 ```C++
   for (auto levelIndex = 1; levelIndex < levels.Num(); levelIndex++)
   {
-  	auto level = levels.get(levelIndex).share();
+  	auto level = levels.get(levelIndex);
   	auto liveActors = level->findLiveActors();
 
   	for (ReflectPointer<AActor*> actor_r : liveActors)
